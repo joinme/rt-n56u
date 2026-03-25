@@ -94,9 +94,10 @@ export KERNEL_HEADERS_PATH CONFIG_CROSS_COMPILER_ROOT CONFIG_CROSS_COMPILER_PATH
 export UNSQSHFS_TOOL CONFIG_WITHOUT_KERNEL
 
 ############################################################################
-
+$(warning --------------------------export------------------------------ )
 .PHONY: modules
 modules:
+	$(warning --------------------------modules------------------------------ )
 	. $(LINUXDIR)/.config; if [ "$$CONFIG_MODULES" = "y" ]; then \
 		[ -d $(LINUXDIR)/modules ] || mkdir $(LINUXDIR)/modules; \
 		$(MAKEARCH_KERNEL) -j$(HOST_NCPU) -C $(LINUXDIR) modules; \
@@ -104,6 +105,7 @@ modules:
 
 .PHONY: modules_install
 modules_install:
+	$(warning --------------------------modules_install------------------------------ )
 	. $(LINUXDIR)/.config; if [ "$$CONFIG_MODULES" = "y" ]; then \
 		[ -d $(ROMFSDIR)/lib/modules ] || mkdir -p $(ROMFSDIR)/lib/modules; \
 		$(MAKEARCH_KERNEL) -C $(LINUXDIR) INSTALL_MOD_PATH=$(ROMFSDIR) DEPMOD=$(ROOTDIR)/tools/depmod.sh modules_install; \
@@ -111,11 +113,13 @@ modules_install:
 
 .PHONY: modules_copy
 modules_copy:
+	$(warning --------------------------modules_copy------------------------------ )
 	[ -d $(ROMFSDIR)/lib/modules ] || mkdir -p $(ROMFSDIR)/lib/modules
 	cp -rfa $(MERGE_ROOTFS)/lib/modules $(ROMFSDIR)/lib
 
 .PHONY: bin_copy
 bin_copy:
+	$(warning --------------------------modules_copy------------------------------ )
 	for f in `cat $(MERGE_DIR)/file_list |grep -v "^#"`; do cp -fP $(MERGE_ROOTFS)/$$f $(ROMFSDIR)/$$f ; done
 
 ############################################################################
@@ -132,21 +136,25 @@ endif
 
 .PHONY: romfs.subdirs
 romfs.subdirs:
+	$(warning --------------------------romfs.subdirs------------------------------ )
 	for dir in vendors $(DIRS) ; do [ ! -d $$dir ] || $(MAKEARCH) -C $$dir romfs || exit 1 ; done
 
 .PHONY: romfs.post
 romfs.post:
+	$(warning --------------------------romfs.post------------------------------ )
 	-find $(ROMFSDIR)/. -name CVS | xargs -r rm -rf ; \
 	$(ROOTDIR)/tools/strip-romfs.sh ; \
 	$(MAKEARCH) -C vendors romfs.post
 
 .PHONY: image
 image:
+	$(warning --------------------------image------------------------------ )
 	[ -d $(IMAGEDIR) ] || mkdir $(IMAGEDIR)
 	$(MAKEARCH) -C vendors image
 
 .PHONY: linux
 linux:
+	$(warning --------------------------linux------------------------------ )
 	$(MAKEARCH_KERNEL) -j$(HOST_NCPU) -C $(LINUXDIR) $(LINUXTARGET) || exit 1
 	if [ -f $(LINUXDIR)/vmlinux ]; then \
 		ln -f $(LINUXDIR)/vmlinux $(LINUXDIR)/linux ; \
@@ -154,17 +162,21 @@ linux:
 
 .PHONY: sparse
 sparse:
+	$(warning --------------------------sparse------------------------------ )
 	$(MAKEARCH_KERNEL) -C $(LINUXDIR) C=1 $(LINUXTARGET) || exit 1
 
 .PHONY: sparseall
 sparseall:
+	$(warning --------------------------sparseall------------------------------ )
 	$(MAKEARCH_KERNEL) -C $(LINUXDIR) C=2 $(LINUXTARGET) || exit 1
 
 .PHONY: subdirs
 subdirs: libs
+	$(warning --------------------------subdirs: libs------------------------------ )
 	for dir in $(DIRS) ; do [ ! -d $$dir ] || $(MAKEARCH) -C $$dir || exit 1 ; done
 
 dep:
+	$(warning --------------------------dep------------------------------ )
 	@if [ ! -f $(LINUXDIR)/.config ] ; then \
 		echo "ERROR: you need to do a 'make config' first" ; \
 		exit 1 ; \
@@ -174,13 +186,16 @@ dep:
 
 .PHONY: tools
 tools:
+	$(warning --------------------------tools------------------------------ )
 	make -C tools
 
 .PHONY: unpack_trx
 unpack_trx:
+	$(warning --------------------------unpack_trx------------------------------ )
 	unpack-trx.sh
 
 clean:
+	$(warning --------------------------clean------------------------------ )
 	make clean -C tools
 	for dir in  $(DIRS); do [ ! -d $$dir ] || $(MAKEARCH) -C $$dir clean ; done
 	$(MAKEARCH_KERNEL) -C $(LINUXDIR) distclean
@@ -191,6 +206,7 @@ clean:
 	rm -f $(LINUXDIR)/arch/mips/ramdisk/*.gz
 
 %_romfs:
+	$(warning --------------------------%_romfs------------------------------ )
 	@case "$(@)" in \
 	*/*) d=`expr $(@) : '\([^/]*\)/.*'`; \
 	     t=`expr $(@) : '[^/]*/\(.*\)'`; \
@@ -199,6 +215,7 @@ clean:
 	esac
 
 %_only:
+	$(warning --------------------------%_only------------------------------ )
 	@case "$(@)" in \
 	*/*) d=`expr $(@) : '\([^/]*\)/.*'`; \
 	     t=`expr $(@) : '[^/]*/\(.*\)'`; \
@@ -207,6 +224,7 @@ clean:
 	esac
 
 %_clean:
+	$(warning --------------------------%_clean------------------------------ )
 	@case "$(@)" in \
 	*/*) d=`expr $(@) : '\([^/]*\)/.*'`; \
 	     t=`expr $(@) : '[^/]*/\(.*\)'`; \
